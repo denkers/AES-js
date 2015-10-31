@@ -62,6 +62,93 @@ Engine.shiftRow = function(row, numPositions)
 
 
 
+//Mix columns layer
+Engine.mixColumns = function(state, encrypt_mode)
+{
+	var temp = Structure.createState();
+	for(row = 0; row < 4; row++)
+	{
+		for(col = 0; col < 4; col++)
+		{
+			temp[col][row]	= 
+				Structure.xor
+  				(
+					Engine.mixMultiply(state[0][row], Structure.getMixColEntry(col, 0, encrypt_mode)),
+					Engine.mixMultiply(state[1][row], Structure.getMixColEntry(col, 1, encrypt_mode))
+		  		);
+
+			temp[col][row] = Structure.xor(temp[col][row], Engine.mixMultiply(state[2][row], Structure.getMixColEntry(col, 2, encrypt_mode)));
+			temp[col][row] = Structure.xor(temp[col][row], Engine.mixMultiply(state[3][row], Structure.getMixColEntry(col, 3, encrypt_mode)));							 
+		}
+	}
+
+	Structure.copyState(state, temp);
+};
+
+
+Engine.mixMultiply = function(stateEntry, mixEntry)
+{
+	var mixHex		=	Structure.padHex(Structure.convert(mixEntry, 2, 16));
+	var stateHex	=	Structure.padHex(Structure.convert(stateEntry, 2, 16));
+
+	//mix col entry is <= 3
+	//skip peasants algorithm
+	if(mixHex <= 3)
+	{
+		//multiply by 1 is identity
+		if (mixHex == '01')
+			return stateEntry;
+
+		//multiply by x (left shift 1)
+		var product = Structure.shiftLeft(stateEntry, 1);
+
+		if (mixHex == '03')
+			product = Structure.xor(product, stateEntry); 
+
+		//left most bit is set (carry)
+		if (stateEntry.charAt(0) == '1')
+			product = Structure.xor(product, Structure.convert('1b', 16, 2));
+
+		return product;
+	}
+
+	//mix col entry is > 3
+	//use peasants algorithm to get product
+	else
+	{ 
+		if (mixHex == 0 || stateHex == 0)
+			return Structure.padBin("");
+
+		var a, b, product, carry;
+		a = stateEntry;
+		b = mixEntry;
+
+		for (i = 0; i < 8; i++)
+		{
+			//if rightmost bit of b is 1, xor product and a
+			if (b.charAt(7) == '1')
+				product = Structure.xor(a, b);
+
+			//shift b 1 bit right
+			b = Structure.shiftRight(b, 1);
+
+			//set carry before shifting a
+			//carry is true if leftmost bit of a is set
+			carry = (a.charAt(0) == '1');
+
+			//shift a 1 bit left
+			a = Structure.shiftLeft(a, 1);
+
+			//carrying bit, xor a with 0x1b
+			if (carry)
+				a = Structure.xor(a, Structure.convert('1b', 16, 2));
+		}
+
+		return product;
+	
+	}
+};
+
 
 
 

@@ -92,9 +92,9 @@ Structure.getMixColEntry = function(row, col, encrypt_mode)
 {
 	var value;
 	if(encrypt_mode)
-		value =  mixColMatrix[row][col].toString(16);
+		value =  Structure.mixColMatrix[row][col].toString(16);
 	else
-		value = inverseMixColMatrix[row][col].toString(16);
+		value =  Structure.inverseMixColMatrix[row][col].toString(16);
 
 	return Structure.convert(value, 16, 2);
 };
@@ -125,8 +125,19 @@ Structure.getSboxEntryFromBin = function(bin, encrypt_mode)
 
 Structure.padBin = function(bin)
 {
+	if(bin.length >= 8) return bin;
+
 	var b = '00000000';
 	return b.substring(0, b.length - bin.length) + bin;
+};
+
+
+Structure.padHex = function(hex)
+{
+	if(hex.length >= 2) return hex;
+
+	var h = '00';
+	return h.substring(0, h.length - hex.length) + hex;
 };
 
 
@@ -187,6 +198,12 @@ Structure.makeState = function(str)
 	return state;
 };
 
+Structure.copyState = function(stateA, stateB)
+{
+	for(row = 0; row < 4; row++)
+		for(col = 0; col < 4; col++)
+			stateA[row][col] = stateB[row][col];
+};
 
 Structure.strToState = function(str)
 {
@@ -251,6 +268,30 @@ Structure.stateToString = function(state)
 Structure.getNumStates = function(str)
 {
 	return Math.ceil(str.length / 16);
+};
+
+
+
+Structure.xor = function(a, b)
+{
+	a = parseInt(a, 2);
+	b = parseInt(b, 2);
+
+	return Structure.padBin((a ^ b).toString(2));
+};
+
+
+Structure.shiftLeft = function(a, b)
+{
+	a = parseInt(a, 2);
+	return Structure.padBin((a << b).toString(2)).slice(-8);
+};
+
+
+Structure.shiftRight = function(a, b)
+{
+	a = parseInt(a, 2);
+	return Structure.padBin((a >> b).toString(2)).slice(-8);
 };
 
 
