@@ -37,9 +37,29 @@ AES.encryptBlock = function(state, keySchedule, keySize)
 
 
 
-AES.encrypt_cbc = function(states, key, keySize)
+AES.encrypt_cbc = function(states, key, iVector, keySize)
 {
+	var schedule	=	new KeySchedule(key);
+	var numBlocks	=	states.length;
 
+	//Make numBlocks cipher-text blocks
+	for(i = 0; i < numBlocks; i++)
+	{
+		//create input block
+		//-------------------------------------------------
+		//xor initial vector on first plain-text block
+		if(i == 0)
+			Structure.addStates(states[0], iVector);
+
+		//xor previous output block
+		else
+			Structure.addStates(states[i], states[i - 1]);
+		//-------------------------------------------------
+	
+	
+		//encrypt input block to make cipher block
+		AES.encryptBlock(states[i], schedule, keySize);
+	}
 };
 
 
@@ -77,9 +97,39 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 };
 
 
-AES.decrypt_cbc = function(state, keySchedule, keySize)
+AES.decrypt_cbc = function(states, key, iVector, keySize)
 {
+	var cipherBlocks		=	Structure.createState();
+	var numBlocks			=	states.length;
+	var schedule			=	new KeySchedule(key);
 
+	//store the cipher text blocks before mutation
+	//-------------------------------------------------
+	for(i = 0; i < numBlocks; i++)
+		cipherBlocks[i] = states[i];
+	//-------------------------------------------------
+
+	
+	//create numBlocks plain-text blocks in cbc mode
+	for(i = 0; i < numBlocks; i++)
+	{
+		//decrypt input cipher block
+		//creates output block i
+		AES.decryptBlock(states[i], schedule, keySize);
+
+
+		//create plain text block i
+		//-------------------------------------------------
+		//xor initial vector on first block
+		if(i == 0)
+			Structure.addStates(states[i], iVector);
+		
+		//xor previous cipher-text block
+		else
+			Structure.addStates(states[i], iVector);
+		//-------------------------------------------------
+
+	}
 }
 
 
