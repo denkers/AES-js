@@ -83,7 +83,8 @@ Structure.inverseMixColMatrix =
 
 Structure.getRconEntry = function(index)
 {
-	return Structure.convert(rcon[index].toString(16), 16, 2);
+	var rc =  Structure.convert(this.rcon[index].toString(16), 16, 2);
+	return rc;
 };
 
 
@@ -210,10 +211,11 @@ Structure.strToState = function(str)
 	var bytes = [];
 	for(i = 0; i < 16; i++)
 	{
-		if(str.length < i)
+		if(str.length <= i)
 			bytes.push(Structure.padBin(""));
+		
 		else
-			bytes.push(Structure.padBin(bin.charCodeAt(i).toString(2)));
+			bytes.push(Structure.padBin(str.charCodeAt(i).toString(2)));
 	}
 
 	return Structure.makeState(bytes);
@@ -321,6 +323,7 @@ Structure.makeStates = function(str)
 
 		if(strIndex + 16 > len)
 			nextStr = str.substring(strIndex, len);
+
 		else
 			nextStr = str.substring(strIndex, strIndex + 16);
 
