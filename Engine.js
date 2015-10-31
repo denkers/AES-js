@@ -65,6 +65,8 @@ Engine.shiftRow = function(row, numPositions)
 //Mix columns layer
 Engine.mixColumns = function(state, encrypt_mode)
 {
+	//Perform the multiplication of the state and mixColmatrix 
+	//Copy the product in temp
 	var temp = Structure.createState();
 	for(row = 0; row < 4; row++)
 	{
@@ -78,7 +80,7 @@ Engine.mixColumns = function(state, encrypt_mode)
 		  		);
 
 			temp[col][row] = Structure.xor(temp[col][row], Engine.mixMultiply(state[2][row], Structure.getMixColEntry(col, 2, encrypt_mode)));
-			temp[col][row] = Structure.xor(temp[col][row], Engine.mixMultiply(state[3][row], Structure.getMixColEntry(col, 3, encrypt_mode)));							 
+			temp[col][row] = Structure.xor(temp[col][row], Engine.mixMultiply(state[3][row], Structure.getMixColEntry(col, 3, encrypt_mode)));	
 		}
 	}
 
