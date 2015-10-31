@@ -43,7 +43,7 @@ KeySchedule.prototype.initKeys = function(key)
 		}
 
 		//set next 4 bytes of schedule as next xor with the prev 16 bytes, 4 byte block
-		//incr front
+		//increments front
 		for(j = 0; j < 4; j++, front++)
 			schedule[front] = Structure.xor(schedule[front - keyLen], next[j]);
 	}
@@ -60,24 +60,45 @@ KeySchedule.prototype.rotate = function(word)
 };
 
 
+//performs the keyschedule core operations
+//rotates the word
+//applies the sbox
+//xors the rcon entry on word
 KeySchedule.prototype.core = function(word, i)
 {
+	//rotate word left 1 byte
+	this.rotate(word);
 
+	//apply s-box on word
+	//uses Structure.sbox for both encrypt/decrypt
+	for(j = 0; j < 4; j++)
+		word[j]	=	Structure.getSboxEntryFromBin(word[j], true);
 
+	//add round coefficient to left most byte of word
+	this.addRoundCoeff(word[0], i);
 };
 
 
+//xors entry with the rcon entry at index i
 KeySchedule.prototype.addRoundCoeff = function(entry, i)
 {
-
-
+	var rconEntry	=	Structure.getRconEntry(i);
+	return Structure.xor(entry, rconEntry);
 };
 
 
-
+//returns a key in the schedule for the round at roundNum
 KeySchedule.prototype.getKey = function(roundNum)
 {
+	var key		=	Structure.createState();	
+	var sIndex	=	(roundNum * 16);
 
+	//copy round key into key
+	for(row = 0; row < 4; row++)
+		for(col = 0; col < 4; col++)
+			key[col][row] = this.schedule[sIndex++];
+
+	return key;
 };
 
 
