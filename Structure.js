@@ -283,6 +283,14 @@ Structure.xor = function(a, b)
 };
 
 
+Structure.addStates = function(stateA, stateB)
+{
+	for(row = 0; row < 4; row++)
+		for(col = 0; col < 4; col++)
+			stateA[col][row] = Structure.xor(stateA[col][row], stateB[col][row]);
+};
+
+
 Structure.shiftLeft = function(a, b)
 {
 	a = parseInt(a, 2);
