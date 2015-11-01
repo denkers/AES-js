@@ -70,11 +70,12 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 	var roundKey;
 	var numRounds	=	AES.getNumRounds(keySize);
 
+
 	//Perform inverse internals for numRounds
 	for(var round = numRounds; round > 0; round--)
 	{
 		//Add round key to state
-		roundKey = schedule.getKey(round);
+		roundKey = keySchedule.getKey(round);
 		Structure.addStates(state, roundKey);
 
 
@@ -85,7 +86,6 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 		if(round != numRounds)
 			Engine.mixColumns(state, false);
 
-
 		//Inverse shift rows layer
 		Engine.shiftRows(state, false);
 		//-----------------------------------------
@@ -95,19 +95,33 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 		//Inverse byte substiution layer
 		Engine.byteSub(state, false);
 	}
+
+	//Add round 0 key
+	//-----------------------------------------
+	roundKey = keySchedule.getKey(0);
+	Structure.addStates(state, roundKey);
+	//-----------------------------------------
+	
+	
 };
 
 
 AES.decrypt_cbc = function(states, key, iVector, keySize)
 {
-	var cipherBlocks		=	Structure.createState();
+	var cipherBlocks		=	[[[]]];
 	var numBlocks			=	states.length;
 	var schedule			=	new KeySchedule(key, 10);
 
 	//store the cipher text blocks before mutation
 	//-------------------------------------------------
 	for(var i = 0; i < numBlocks; i++)
-		cipherBlocks[i] = states[i];
+	{
+		var temp = Structure.createState();
+		for(var row = 0; row < 4; row++)
+			temp[row] = states[i][row].slice(0);
+		
+		cipherBlocks[i] = temp;
+	}
 	//-------------------------------------------------
 
 	
@@ -123,11 +137,11 @@ AES.decrypt_cbc = function(states, key, iVector, keySize)
 		//-------------------------------------------------
 		//xor initial vector on first block
 		if(i == 0)
-			Structure.addStates(states[i], iVector);
+			Structure.addStates(states[0], iVector);
 		
 		//xor previous cipher-text block
 		else
-			Structure.addStates(states[i], iVector);
+			Structure.addStates(states[i], cipherBlocks[i - 1]);
 		//-------------------------------------------------
 
 	}
@@ -151,4 +165,29 @@ AES.getNumRounds = function(keySize)
 			return 0;
 	}
 };
+
+var text = 'abcdefghijklmnopkwitposlymwuiqnu';
+var ivText = 'toulsmynawutqpoe';
+var keyText = 'tlyupqirmynauwta';
+var states = Structure.makeStates(text);
+var ivx = Structure.strToState(ivText);
+var keyx = Structure.strToState(keyText);
+
+console.log('plain text:');
+Structure.printState(states[0]);
+
+console.log('key:');
+Structure.printState(keyx);
+
+console.log('iv: ');
+Structure.printState(ivx);
+
+console.log('encrypted: ');
+AES.encrypt_cbc(states, keyx, ivx, 128);
+Structure.printState(states[0]);
+
+console.log('decrypted: ');
+AES.decrypt_cbc(states, keyx, ivx, 128);
+Structure.printState(states[0]);
+
 

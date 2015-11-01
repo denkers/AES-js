@@ -124,14 +124,15 @@ Engine.mixMultiply = function(stateEntry, mixEntry)
 			return Structure.padBin("");
 
 		var a, b, carry;
-		a = stateEntry;
-		b = mixEntry;
+		a		=	stateEntry;
+		b		=	mixEntry;
+		product =	Structure.padBin("");
 
 		for (var i = 0; i < 8; i++)
 		{
 			//if rightmost bit of b is 1, xor product and a
 			if (b.charAt(7) == '1')
-				product = Structure.xor(a, b);
+				product = Structure.xor(product, a);
 
 			//shift b 1 bit right
 			b = Structure.shiftRight(b, 1);
