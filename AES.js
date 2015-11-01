@@ -1,5 +1,10 @@
 function AES() {}
 
+//Encrypts the passed state block
+//passed state is mutated with encrypted state
+//state: 128bit block: 4x4 state matrix
+//keyScheudle: loaded KeySchedule with your pkey
+//keySize: length of pkey: 128/192/256
 AES.encryptBlock = function(state, keySchedule, keySize)
 {
 	//Add round 0 key
@@ -36,7 +41,11 @@ AES.encryptBlock = function(state, keySchedule, keySize)
 };
 
 
-
+//Encrypts the passed state blocks in CBC mode
+//states:	state matrice(s) to be encrypted
+//key:		your private key (KeySchedule loaded inside)
+//iVector:	initial vector, 128bit state matrix
+//keySize:	length of key: 128/192/256
 AES.encryptCBC = function(states, key, iVector, keySize)
 {
 	var schedule	=	new KeySchedule(key, 10);
@@ -64,7 +73,11 @@ AES.encryptCBC = function(states, key, iVector, keySize)
 };
 
 
-
+//Decrypts the passed state block
+//passed state is mutated with decrypted state
+//state:		128bit block/4x4 state matrix
+//keySchedule:	loaded KeySchedule with pkey
+//keySize:		pkey length: 128/192/256
 AES.decryptBlock = function(state, keySchedule, keySize)
 {
 	var roundKey;
@@ -104,41 +117,79 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 };
 
 
+//Encrypts the passed plain text in CBC mode
+//returns the encrypted states matrice(s)
+//use encryptMessage over encryptCBC for arbtitrary plainStr length
+//plainStr:		plain text to be encrypted
+//key:			private key => string OR state matrix
+//iVector:		initial vector => string or state matrix
+//keySize:		length of private key 128/192/256
 AES.encryptMessage = function(plainStr, key, iVector, keySize)
 {
+	//Invalid encryption input
 	if(plainStr.length == 0 || AES.getNumRounds(keySize) == 0 || iVector.length > 16) return;
 
 	var keyState, iVectorState;
+	var states				=	Structure.makeStates(plainStr);
+
+	//key or initial vector may be passed as string or state matrix
+	//creates their respective matrices and sets iVectorState & keyState
+	//-------------------------------------------------------------------
+	//key and initial vector are passed strings
+	//create their state matrices
 	if(!(iVector instanceof Array) && !(key instanceof Array))
 	{
 		iVectorState		=	Structure.strToState(iVectorStr);
 		keyState			=	Structure.strToState(keyStr);
 	}
 
+	//key and initial vector are state matrices 
+	//set iVectorState & keyState
 	else
 	{
 		iVectorState		=	iVector;
 		keyState			=	key;
 	}
+	//-------------------------------------------------------------------
 
-	var states			=	Structure.makeStates(plainStr);
+
+	//encrypt state(s) in cbc mode
+	//returns the state(s)
 	AES.encryptCBC(states, keyState, iVectorState, keySize);
 	return states;
 };
 
 
-AES.decryptMessage = function(cipherStates, keyStr, iVectorStr, keySize)
+//Decrypts the passed states in CBC mode
+//mutates the passed cipherStates into decrypted states
+//use decryptCBC if your key/initial vector are state matrices
+//states:		encrypted state matrice(s)
+//keyStr:		128bit/16 length private key string
+//iVectorStr:	128bit/16 length initial vector string
+//keySize:		length of private key: 128/192/256
+AES.decryptMessage = function(states, keyStr, iVectorStr, keySize)
 {
-	if(cipherStates.length == 0 || AES.getNumRounds(keySize) == 0 || iVectorStr.length > 16) return;
+	//Invalid decryption input
+	if(states.length == 0 || AES.getNumRounds(keySize) == 0 || iVectorStr.length > 16) return;
 
+	//Create iVector & key state matrices
 	var iVector		=	Structure.strToState(iVectorStr);
 	var key			=	Structure.strToState(keyStr); 
 
-	AES.decryptCBC(cipherStates, key, iVector, keySize);
-	return states;
+	//Decrypt the encrypted states in CBC mode
+	//states will be muted into decrypted states
+	AES.decryptCBC(states, key, iVector, keySize);
 };
 
 
+
+//Decrypts the passed states in CBC mode
+//mutates the passed cipherStates into decrypted states
+//use over decryptMessage if key/iVector are matrices
+//states:		encrypted state matrice(s)
+//keyStr:		private key state matrix
+//iVectorStr:	initial vector state matrix
+//keySize:		length of private key: 128/192/256
 AES.decryptCBC = function(states, key, iVector, keySize)
 {
 	var cipherBlocks		=	[[[]]];
