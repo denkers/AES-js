@@ -166,16 +166,28 @@ Structure.printStateRow = function(state, rowNumber)
 
 Structure.printState = function(state)
 {
-	for(row = 0; row < 4; row++)
+	for(var row = 0; row < 4; row++)
 	{
 		var colStr = '';
-		for(col = 0; col < 4; col++)
+		for(var col = 0; col < 4; col++)
 			colStr += state[row][col] + ' ';
 		
 		console.log(colStr + '\n');
 	}
-
 };
+
+
+Structure.printDecryptedMessage = function(states)
+{
+	var numStates	=	states.length;
+	var message		=	"";
+
+	for(var i = 0; i < numStates; i++)
+		message += Structure.stateToString(states[i]);
+
+	return message;
+};
+
 
 Structure.createState = function()
 {
@@ -197,6 +209,24 @@ Structure.makeState = function(str)
 		for(var col = 0; col < 4; col++)
 			state[col][row] = str[index++];
 	
+	return state;
+};
+
+Structure.generateState = function()
+{
+	var state = Structure.createState();
+	var dec, next;
+
+	for(var row = 0; row < 4; row++)
+	{
+		for(var col = 0; col < 4; col++)
+		{
+			dec				=	Math.floor(Math.random() * 256);
+			next			=	String.fromCharCode(dec).toString(2);
+			state[col][row]	=	next;
+		}
+	}
+
 	return state;
 };
 

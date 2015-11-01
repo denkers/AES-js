@@ -37,7 +37,7 @@ AES.encryptBlock = function(state, keySchedule, keySize)
 
 
 
-AES.encrypt_cbc = function(states, key, iVector, keySize)
+AES.encryptCBC = function(states, key, iVector, keySize)
 {
 	var schedule	=	new KeySchedule(key, 10);
 	var numBlocks	=	states.length;
@@ -101,12 +101,45 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 	roundKey = keySchedule.getKey(0);
 	Structure.addStates(state, roundKey);
 	//-----------------------------------------
-	
-	
 };
 
 
-AES.decrypt_cbc = function(states, key, iVector, keySize)
+AES.encryptMessage = function(plainStr, key, iVector, keySize)
+{
+	if(plainStr.length == 0 || AES.getNumRounds(keySize) == 0 || iVector.length > 16) return;
+
+	var keyState, iVectorState;
+	if(!(iVector instanceof Array) && !(key instanceof Array))
+	{
+		iVectorState		=	Structure.strToState(iVectorStr);
+		keyState			=	Structure.strToState(keyStr);
+	}
+
+	else
+	{
+		iVectorState		=	iVector;
+		keyState			=	key;
+	}
+
+	var states			=	Structure.makeStates(plainStr);
+	AES.encryptCBC(states, keyState, iVectorState, keySize);
+	return states;
+};
+
+
+AES.decryptMessage = function(cipherStates, keyStr, iVectorStr, keySize)
+{
+	if(cipherStates.length == 0 || AES.getNumRounds(keySize) == 0 || iVectorStr.length > 16) return;
+
+	var iVector		=	Structure.strToState(iVectorStr);
+	var key			=	Structure.strToState(keyStr); 
+
+	AES.decryptCBC(cipherStates, key, iVector, keySize);
+	return states;
+};
+
+
+AES.decryptCBC = function(states, key, iVector, keySize)
 {
 	var cipherBlocks		=	[[[]]];
 	var numBlocks			=	states.length;
@@ -148,6 +181,10 @@ AES.decrypt_cbc = function(states, key, iVector, keySize)
 };
 
 
+//Returns the number of internal rounds 
+//-needed for the passed keySize
+//keySize: bit length of private key
+//recognizes 128/192/256 bit length keys
 AES.getNumRounds = function(keySize)
 {
 	switch(keySize)
