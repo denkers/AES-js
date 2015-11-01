@@ -11,7 +11,7 @@ function KeySchedule(key, numRounds)
 KeySchedule.prototype.initKeys = function(key)
 {
 	//set first 16 bytes of schedule as private key
-	for(col = 0; col < 4; col++)
+	for(var col = 0; col < 4; col++)
 	{
 		var colBytes				=	Structure.getColumn(key, col);
 		this.schedule[col * 4]		=	colBytes[0];
@@ -31,7 +31,7 @@ KeySchedule.prototype.initKeys = function(key)
 		var next	=	[];
 
 		//copy previous 4 bytes into next
-		for(j = 0, k = (front - 4); j < 4; j++, k++)
+		for(var j = 0, k = (front - 4); j < 4; j++, k++)
 			next[j] = this.schedule[k];
 
 		//perform the core operations on next and incr i
@@ -44,7 +44,7 @@ KeySchedule.prototype.initKeys = function(key)
 
 		//set next 4 bytes of schedule as next xor with the prev 16 bytes, 4 byte block
 		//increments front
-		for(j = 0; j < 4; j++, front++)
+		for(var j = 0; j < 4; j++, front++)
 			this.schedule[front] = Structure.xor(this.schedule[front - keyLen], next[j]);
 		
 	}
@@ -54,7 +54,7 @@ KeySchedule.prototype.initKeys = function(key)
 KeySchedule.prototype.rotate = function(word)
 {
 	var temp = word[0];
-	for(i = 0; i < 3; i++)
+	for(var i = 0; i < 3; i++)
 		word[i] = word[i + 1];
 
 	word[3] = temp;
@@ -73,7 +73,7 @@ KeySchedule.prototype.core = function(word, i)
 
 	//apply s-box on word
 	//uses Structure.sbox for both encrypt/decrypt
-	for(j = 0; j < 4; j++)
+	for(var j = 0; j < 4; j++)
 		word[j]	=	Structure.getSboxEntryFromBin(word[j], true);
 
 	
@@ -99,8 +99,8 @@ KeySchedule.prototype.getKey = function(roundNum)
 	var sIndex	=	(roundNum * 16);
 
 	//copy round key into key
-	for(row = 0; row < 4; row++)
-		for(col = 0; col < 4; col++)
+	for(var row = 0; row < 4; row++)
+		for(var col = 0; col < 4; col++)
 			key[col][row] = this.schedule[sIndex++];
 
 	return key;

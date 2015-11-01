@@ -3,14 +3,14 @@ function AES() {}
 AES.encryptBlock = function(state, keySchedule, keySize)
 {
 	//Add round 0 key
-	//------------------------------------
+	//------------------------------------	
 	var roundKey = keySchedule.getKey(0);
 	Structure.addStates(state, roundKey);
 	//------------------------------------
 	
 	//Perform internals for numRounds
 	var numRounds = AES.getNumRounds(keySize);
-	for(round = 1; round <= numRounds; round++)
+	for(var round = 1; round <= numRounds; round++)
 	{
 		//Byte substitution layer
 		//Confusion component
@@ -39,11 +39,11 @@ AES.encryptBlock = function(state, keySchedule, keySize)
 
 AES.encrypt_cbc = function(states, key, iVector, keySize)
 {
-	var schedule	=	new KeySchedule(key);
+	var schedule	=	new KeySchedule(key, 10);
 	var numBlocks	=	states.length;
 
 	//Make numBlocks cipher-text blocks
-	for(i = 0; i < numBlocks; i++)
+	for(var i = 0; i < numBlocks; i++)
 	{
 		//create input block
 		//-------------------------------------------------
@@ -54,9 +54,10 @@ AES.encrypt_cbc = function(states, key, iVector, keySize)
 		//xor previous output block
 		else
 			Structure.addStates(states[i], states[i - 1]);
+
 		//-------------------------------------------------
 	
-	
+			
 		//encrypt input block to make cipher block
 		AES.encryptBlock(states[i], schedule, keySize);
 	}
@@ -70,7 +71,7 @@ AES.decryptBlock = function(state, keySchedule, keySize)
 	var numRounds	=	AES.getNumRounds(keySize);
 
 	//Perform inverse internals for numRounds
-	for(round = numRounds; round > 0; round--)
+	for(var round = numRounds; round > 0; round--)
 	{
 		//Add round key to state
 		roundKey = schedule.getKey(round);
@@ -101,11 +102,11 @@ AES.decrypt_cbc = function(states, key, iVector, keySize)
 {
 	var cipherBlocks		=	Structure.createState();
 	var numBlocks			=	states.length;
-	var schedule			=	new KeySchedule(key);
+	var schedule			=	new KeySchedule(key, 10);
 
 	//store the cipher text blocks before mutation
 	//-------------------------------------------------
-	for(i = 0; i < numBlocks; i++)
+	for(var i = 0; i < numBlocks; i++)
 		cipherBlocks[i] = states[i];
 	//-------------------------------------------------
 
@@ -130,10 +131,10 @@ AES.decrypt_cbc = function(states, key, iVector, keySize)
 		//-------------------------------------------------
 
 	}
-}
+};
 
 
-AES.getNumRounds(keySize)
+AES.getNumRounds = function(keySize)
 {
 	switch(keySize)
 	{
@@ -149,4 +150,5 @@ AES.getNumRounds(keySize)
 		default:
 			return 0;
 	}
-}
+};
+

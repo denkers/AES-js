@@ -7,9 +7,9 @@ function Engine() {}
 //decryption subtitutes bytes from Structure.inverseSbox
 Engine.byteSub = function(state, encrypt_mode)
 {
-	for(row = 0; row < 4; row++)
+	for(var row = 0; row < 4; row++)
 	{
-		for(col = 0; col < 4; col++)
+		for(var col = 0; col < 4; col++)
 		{
 			//decryption subtitutes bytes from Structure.inverseSbox
 			//encryption substitutes bytes from Structure.sbox
@@ -26,6 +26,7 @@ Engine.byteSub = function(state, encrypt_mode)
 //encrypt_mode: bool, pass true/false for encrypting/decrypting
 Engine.shiftRows = function(state, encrypt_mode)
 {
+	var numPositions;
 	//shift rows 1..4 in state 3..1 positions right
 	if(encrypt_mode)
 	{
@@ -49,7 +50,7 @@ Engine.shiftRow = function(row, numPositions)
 	//copy shifted positions into temp
 	//-------------------------------------------
 	var temp = [];
-	for(i = 0; i < 4; i++)
+	for(var i = 0; i < 4; i++)
 	{
 		var index	= (i + numPositions) % 4;
 		temp[index] = row[i];
@@ -68,9 +69,9 @@ Engine.mixColumns = function(state, encrypt_mode)
 	//Perform the multiplication of the state and mixColmatrix 
 	//Copy the product in temp
 	var temp = Structure.createState();
-	for(row = 0; row < 4; row++)
+	for(var row = 0; row < 4; row++)
 	{
-		for(col = 0; col < 4; col++)
+		for(var col = 0; col < 4; col++)
 		{
 			temp[col][row]	= 
 				Structure.xor
@@ -92,6 +93,7 @@ Engine.mixMultiply = function(stateEntry, mixEntry)
 {
 	var mixHex		=	Structure.padHex(Structure.convert(mixEntry, 2, 16));
 	var stateHex	=	Structure.padHex(Structure.convert(stateEntry, 2, 16));
+	var product;
 
 	//mix col entry is <= 3
 	//skip peasants algorithm
@@ -102,7 +104,7 @@ Engine.mixMultiply = function(stateEntry, mixEntry)
 			return stateEntry;
 
 		//multiply by x (left shift 1)
-		var product = Structure.shiftLeft(stateEntry, 1);
+		product = Structure.shiftLeft(stateEntry, 1);
 
 		if (mixHex == '03')
 			product = Structure.xor(product, stateEntry); 
@@ -121,11 +123,11 @@ Engine.mixMultiply = function(stateEntry, mixEntry)
 		if (mixHex == 0 || stateHex == 0)
 			return Structure.padBin("");
 
-		var a, b, product, carry;
+		var a, b, carry;
 		a = stateEntry;
 		b = mixEntry;
 
-		for (i = 0; i < 8; i++)
+		for (var i = 0; i < 8; i++)
 		{
 			//if rightmost bit of b is 1, xor product and a
 			if (b.charAt(7) == '1')
