@@ -253,13 +253,15 @@ Structure.hexToState = function(hex)
 
 Structure.stateToString = function(state)
 {
-	var str;
+	var str = "";
 	for(var row = 0; row < 4; row++)
 	{
 		for(var col = 0; col < 4; col++)
 		{
-			var hex		=	Structure.convert(state[col][row], 2, 16);
-			str			+=	String.fromCharCode(parseInt(hex, 16));
+			var hex		=	Structure.padHex(Structure.convert(state[col][row], 2, 16));
+
+			if(hex != '00')
+				str			+=	String.fromCharCode(parseInt(hex, 16));
 		}
 	}
 

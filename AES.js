@@ -165,29 +165,3 @@ AES.getNumRounds = function(keySize)
 			return 0;
 	}
 };
-
-var text = 'abcdefghijklmnopkwitposlymwuiqnu';
-var ivText = 'toulsmynawutqpoe';
-var keyText = 'tlyupqirmynauwta';
-var states = Structure.makeStates(text);
-var ivx = Structure.strToState(ivText);
-var keyx = Structure.strToState(keyText);
-
-console.log('plain text:');
-Structure.printState(states[0]);
-
-console.log('key:');
-Structure.printState(keyx);
-
-console.log('iv: ');
-Structure.printState(ivx);
-
-console.log('encrypted: ');
-AES.encrypt_cbc(states, keyx, ivx, 128);
-Structure.printState(states[0]);
-
-console.log('decrypted: ');
-AES.decrypt_cbc(states, keyx, ivx, 128);
-Structure.printState(states[0]);
-
-
