@@ -179,6 +179,7 @@ AES.decryptMessage = function(states, keyStr, iVectorStr, keySize)
 	//Decrypt the encrypted states in CBC mode
 	//states will be muted into decrypted states
 	AES.decryptCBC(states, key, iVector, keySize);
+	return Structure.statesToString(states);
 };
 
 
