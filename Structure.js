@@ -177,7 +177,7 @@ Structure.printState = function(state)
 };
 
 
-Structure.printDecryptedMessage = function(states)
+Structure.statesToString = function(states)
 {
 	var numStates	=	states.length;
 	var message		=	"";
@@ -254,7 +254,7 @@ Structure.strToState = function(str)
 
 Structure.hexToState = function(hex)
 {
-	if(hex.length != 32 && hex.length != 48) return;
+	if(hex.length != 32) return;
 
 	var bytes	=	[];
 	var index	=	0;
@@ -262,22 +262,32 @@ Structure.hexToState = function(hex)
 
 	while(index < 16)
 	{
-		if(hex.length == 32)
-		{
-			bytes.push(Structure.convert(hex.substring(hIndex, hIndex + 2), 16, 2));
-			hIndex += 2;
-		}
-
-		else
-		{
-			bytes.push(Structure.convert(hex.substring(hIndex, hIndex + 3), 16, 2));
-			hIndex += 3;
-		}
+		bytes.push(Structure.convert(hex.substring(hIndex, hIndex + 2), 16, 2));
+		hIndex += 2;
 
 		index++;
 	}
 
 	return Structure.makeState(bytes);
+};
+
+
+Structure.stateToHex = function(state)
+{
+	Structure.printState(state);
+	var str = "";
+	for(var row = 0; row < 4; row++)
+	{
+		for(var col = 0; col < 4; col++)
+		{
+			var hex		=	Structure.padHex(Structure.convert(state[col][row], 2, 16));
+
+			if(hex != '00')
+				str	 +=	hex;
+		}
+	}
+
+	return str;
 };
 
 
@@ -291,7 +301,7 @@ Structure.stateToString = function(state)
 			var hex		=	Structure.padHex(Structure.convert(state[col][row], 2, 16));
 
 			if(hex != '00')
-				str			+=	String.fromCharCode(parseInt(hex, 16));
+				str		+=	String.fromCharCode(parseInt(hex, 16));
 		}
 	}
 

@@ -53,18 +53,27 @@ SafeExchange.makeHash = function(bigint)
 
 SafeExchange.signMessage = function(message, pkey, iv)
 {
+	var initState	=	Structure.strToState(message);
+	Structure.printState(initState);
+	var keyState	=	Structure.hexToState(pkey);
+	var ivState		=	Structure.hexToState(iv);
 	var hashedMsg	=	YaMD5.hashStr(message);
-	var encHash		=	AES.encryptMessage(hashedMsg, pkey, iv, 128);
-	var encMsg		=	AES.encryptMessage(message, pkey, iv, 128);
+	var hashState	=	[ Structure.hexToState(hashedMsg) ];
+	var encHash		=	AES.encryptCBC(hashState, keyState, ivState, 128);
+	var encMsg		=	AES.encryptMessage(message, keyState, ivState, 128);
 
 	return { msg: encMsg, hash: encHash };
 };
 
 SafeExchange.releaseMessage = function(message, hash, pkey, iv)
 {
-	var decHash	=	AES.decryptMessage(hash, pkey, iv, 128);
-	var decMsg	=	AES.decryptMessage(message, pkey, iv, 128);
-	var msgHash	=	YaMD5.hashStr(decMsg);
+	var keyState	=	Structure.hexToState(pkey);
+	var ivState		=	Structure.hexToState(iv);
+	var decMsg		=	AES.decryptMessage(message, keyState, ivState, 128);
+
+	AES.decryptMessage(hash, keyState, ivState, 128);
+	var decHash		=	Structure.stateToHex(hash[0]);
+	var msgHash		=	YaMD5.hashStr(decMsg);
 
 	if(msgHash == decHash)
 		return decMsg;
