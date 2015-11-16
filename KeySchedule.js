@@ -8,6 +8,8 @@ function KeySchedule(key, numRounds)
 	}
 }
 
+//Performs the key expansion on the key
+//generates numSubkeys in the schedule
 KeySchedule.prototype.initKeys = function(key)
 {
 	//set first 16 bytes of schedule as private key

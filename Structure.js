@@ -1,5 +1,8 @@
 function Structure() {}
 
+//------------------------------------------------------------------------------------------------------
+//											AES S-BOX
+//------------------------------------------------------------------------------------------------------
 Structure.sbox = 
 [
 	[ 0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76 ],
@@ -19,8 +22,15 @@ Structure.sbox =
 	[ 0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF ],
 	[ 0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16 ]
 ];
+//------------------------------------------------------------------------------------------------------
 
 
+
+
+
+//------------------------------------------------------------------------------------------------------
+//										AES INVERSE S-BOX
+//------------------------------------------------------------------------------------------------------
 Structure.inverseSbox = 
 [
 	[ 0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB ],
@@ -40,8 +50,15 @@ Structure.inverseSbox =
 	[ 0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61 ],
 	[ 0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D ]
 ];
+//-----------------------------------------------------------------------------------------------------
 
 
+
+
+
+//-------------------------------------------------------------------------------------------------
+//											ROUND COEFFICIENTS 
+//-------------------------------------------------------------------------------------------------
 Structure.rcon = 
 [
 	0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a,
@@ -61,8 +78,10 @@ Structure.rcon =
 	0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd,
 	0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
 ];
+//-------------------------------------------------------------------------------------------------
 
 
+//Mix column matrix used in MixColumns layer
 Structure.mixColMatrix = 
 [
 	[ 0x02, 0x03, 0x01, 0x01 ],
@@ -72,6 +91,8 @@ Structure.mixColMatrix =
 ];
 
 
+//Inverse mix columns matrix used in InverseMixColumns layer
+//Values are the inverse in GF(2^8) of those in mixColMatrix 
 Structure.inverseMixColMatrix = 
 [
 	[ 0x0e, 0x0b, 0x0d, 0x09 ],
@@ -80,7 +101,7 @@ Structure.inverseMixColMatrix =
 	[ 0x0b, 0x0d, 0x09, 0x0e ]
 ];
 
-
+//Returns the round coefficient at index
 Structure.getRconEntry = function(index)
 {
 	var rc =  Structure.convert(this.rcon[index].toString(16), 16, 2);
@@ -88,7 +109,8 @@ Structure.getRconEntry = function(index)
 };
 
 
-
+//Returns the mix column entry a[row][column]
+//returns the inverse value if Mode::DECRYPT
 Structure.getMixColEntry = function(row, col, encrypt_mode)
 {
 	var value;
@@ -101,7 +123,8 @@ Structure.getMixColEntry = function(row, col, encrypt_mode)
 };
 
 
-
+//Returns the s-box entry a[row][column]
+//returns the inverse value if Mode::DECRYPT
 Structure.getSboxEntry = function(row, column, encrypt_mode)
 {
 	var value;
@@ -114,6 +137,9 @@ Structure.getSboxEntry = function(row, column, encrypt_mode)
 };
 
 
+//Returns the sbox entry for the bin
+//row and column of s-box table are derived from bin
+//left-most bits = row, right-most bits = column
 Structure.getSboxEntryFromBin = function(bin, encrypt_mode)
 {
 	bin = Structure.padBin(bin);
@@ -124,6 +150,7 @@ Structure.getSboxEntryFromBin = function(bin, encrypt_mode)
 };
 
 
+//pads a binary string up to 8bits
 Structure.padBin = function(bin)
 {
 	if(bin.length >= 8) return bin;
@@ -132,7 +159,7 @@ Structure.padBin = function(bin)
 	return b.substring(0, b.length - bin.length) + bin;
 };
 
-
+//pads a hex string up 00
 Structure.padHex = function(hex)
 {
 	if(hex.length >= 2) return hex;
@@ -142,6 +169,7 @@ Structure.padHex = function(hex)
 };
 
 
+//Converts the value from base 'from' to base 'to'
 Structure.convert = function(value, from, to)
 {
 	if(from == 2) value = Structure.padBin(value);
@@ -153,7 +181,7 @@ Structure.convert = function(value, from, to)
 		return parsed; 
 };
 
-
+//Prints out the 4 bytes in row
 Structure.printStateRow = function(state, rowNumber)
 {
 	var colStr = '';
@@ -164,6 +192,7 @@ Structure.printStateRow = function(state, rowNumber)
 };
 
 
+//Prints out the state 4x4 matrix 
 Structure.printState = function(state)
 {
 	for(var row = 0; row < 4; row++)
@@ -177,7 +206,9 @@ Structure.printState = function(state)
 };
 
 
-Structure.statesToString = function(states)
+//Prints out the string represented by the states
+//numStates: size(states)
+Structure.printDecryptedMessage = function(states)
 {
 	var numStates	=	states.length;
 	var message		=	"";
@@ -188,7 +219,7 @@ Structure.statesToString = function(states)
 	return message;
 };
 
-
+//Creates the skeleton for the state 
 Structure.createState = function()
 {
 	var state = [];
@@ -200,6 +231,7 @@ Structure.createState = function()
 };
 
 
+//Adds the bytes in str into the passed state
 Structure.makeState = function(str)
 {
 	var state = Structure.createState();
@@ -230,6 +262,7 @@ Structure.generateState = function()
 	return state;
 };
 
+//Copies the state b into a
 Structure.copyState = function(stateA, stateB)
 {
 	for(var row = 0; row < 4; row++)
@@ -237,6 +270,9 @@ Structure.copyState = function(stateA, stateB)
 			stateA[row][col] = stateB[row][col];
 };
 
+
+//puts the character bytes in the str into a state
+//values are converted into binary 
 Structure.strToState = function(str)
 {
 	var bytes = [];
@@ -252,9 +288,12 @@ Structure.strToState = function(str)
 	return Structure.makeState(bytes);
 };
 
+
+//puts the hex into a state
+//values sare converted into binary
 Structure.hexToState = function(hex)
 {
-	if(hex.length != 32) return;
+	if(hex.length != 32 && hex.length != 48) return;
 
 	var bytes	=	[];
 	var index	=	0;
@@ -262,8 +301,17 @@ Structure.hexToState = function(hex)
 
 	while(index < 16)
 	{
-		bytes.push(Structure.convert(hex.substring(hIndex, hIndex + 2), 16, 2));
-		hIndex += 2;
+		if(hex.length == 32)
+		{
+			bytes.push(Structure.convert(hex.substring(hIndex, hIndex + 2), 16, 2));
+			hIndex += 2;
+		}
+
+		else
+		{
+			bytes.push(Structure.convert(hex.substring(hIndex, hIndex + 3), 16, 2));
+			hIndex += 3;
+		}
 
 		index++;
 	}
@@ -271,26 +319,7 @@ Structure.hexToState = function(hex)
 	return Structure.makeState(bytes);
 };
 
-
-Structure.stateToHex = function(state)
-{
-	Structure.printState(state);
-	var str = "";
-	for(var row = 0; row < 4; row++)
-	{
-		for(var col = 0; col < 4; col++)
-		{
-			var hex		=	Structure.padHex(Structure.convert(state[col][row], 2, 16));
-
-			if(hex != '00')
-				str	 +=	hex;
-		}
-	}
-
-	return str;
-};
-
-
+//Returns the string value of the state
 Structure.stateToString = function(state)
 {
 	var str = "";
@@ -301,7 +330,7 @@ Structure.stateToString = function(state)
 			var hex		=	Structure.padHex(Structure.convert(state[col][row], 2, 16));
 
 			if(hex != '00')
-				str		+=	String.fromCharCode(parseInt(hex, 16));
+				str			+=	String.fromCharCode(parseInt(hex, 16));
 		}
 	}
 
@@ -309,14 +338,14 @@ Structure.stateToString = function(state)
 };
 
 
-
+//returns the number of states (blocks) needed for the text
 Structure.getNumStates = function(str)
 {
 	return Math.ceil(str.length / 16);
 };
 
 
-
+//performs a bitwise XOR: a XOR b
 Structure.xor = function(a, b)
 {
 	a = parseInt(a, 2);
@@ -326,6 +355,8 @@ Structure.xor = function(a, b)
 };
 
 
+//Performs matrix/state addition in GF(2^8)
+//Each entry is xor'd with the corresponding entry
 Structure.addStates = function(stateA, stateB)
 {
 	for(var row = 0; row < 4; row++)
@@ -334,6 +365,7 @@ Structure.addStates = function(stateA, stateB)
 };
 
 
+//bitwise left shifts a by b
 Structure.shiftLeft = function(a, b)
 {
 	a = parseInt(a, 2);
@@ -341,6 +373,7 @@ Structure.shiftLeft = function(a, b)
 };
 
 
+//bitwise right shifts a by b
 Structure.shiftRight = function(a, b)
 {
 	a = parseInt(a, 2);
@@ -348,6 +381,7 @@ Structure.shiftRight = function(a, b)
 };
 
 
+//returns the column at colNum in the matrix
 Structure.getColumn = function(state, column)
 {
 	var col = [];
@@ -359,7 +393,7 @@ Structure.getColumn = function(state, column)
 	return col;
 };
 
-
+//Creates states from the string
 Structure.makeStates = function(str)
 {
 	var len			=	str.length;

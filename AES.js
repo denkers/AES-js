@@ -70,8 +70,6 @@ AES.encryptCBC = function(states, key, iVector, keySize)
 		//encrypt input block to make cipher block
 		AES.encryptBlock(states[i], schedule, keySize);
 	}
-
-	return states;
 };
 
 
@@ -169,38 +167,18 @@ AES.encryptMessage = function(plainStr, key, iVector, keySize)
 //keyStr:		128bit/16 length private key string
 //iVectorStr:	128bit/16 length initial vector string
 //keySize:		length of private key: 128/192/256
-AES.decryptMessage = function(states, key, iVector, keySize)
+AES.decryptMessage = function(states, keyStr, iVectorStr, keySize)
 {
 	//Invalid decryption input
-	if(states.length == 0 || AES.getNumRounds(keySize) == 0 || iVector.length > 16) return;
+	if(states.length == 0 || AES.getNumRounds(keySize) == 0 || iVectorStr.length > 16) return;
 
 	//Create iVector & key state matrices
-	var iVectorState, keyState;
-
-	//key or initial vector may be passed as string or state matrix
-	//creates their respective matrices and sets iVectorState & keyState
-	//-------------------------------------------------------------------
-	//key and initial vector are passed strings
-	//create their state matrices
-	if(!(iVector instanceof Array) && !(key instanceof Array))
-	{
-		iVectorState		=	Structure.strToState(iVector);
-		keyState			=	Structure.strToState(key);
-	}
-
-	//key and initial vector are state matrices 
-	//set iVectorState & keyState
-	else
-	{
-		console.log('states!!');
-		iVectorState		=	iVector;
-		keyState			=	key;
-	}
-	//-------------------------------------------------------------------
+	var iVector		=	Structure.strToState(iVectorStr);
+	var key			=	Structure.strToState(keyStr); 
 
 	//Decrypt the encrypted states in CBC mode
 	//states will be muted into decrypted states
-	AES.decryptCBC(states, keyState, iVectorState, keySize);
+	AES.decryptCBC(states, key, iVector, keySize);
 	return Structure.statesToString(states);
 };
 
