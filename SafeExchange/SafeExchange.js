@@ -78,9 +78,13 @@ SafeExchange.makeHash = function(bigint)
 //encrypts the message and returns the encrypted hash and encrypted message
 SafeExchange.signMessage = function(message, pkey, iv)
 {
-	var hashedMsg	=	YaMD5.hashStr(message); //hash message
-	var encHash		=	AES.encryptMessage(hashedMsg, pkey, iv, 128); //encrypt hash
-	var encMsg		=	AES.encryptMessage(message, pkey, iv, 128); //encrypt message
+	var initState	=	Structure.strToState(message);
+	var keyState	=	Structure.hexToState(pkey);
+	var ivState		=	Structure.hexToState(iv);
+	var hashedMsg	=	YaMD5.hashStr(message);
+	var hashState	=	[ Structure.hexToState(hashedMsg) ];
+	var encHash		=	AES.encryptCBC(hashState, keyState, ivState, 128);
+	var encMsg		=	AES.encryptMessage(message, keyState, ivState, 128);
 
 	//return hash and message
 	return { msg: encMsg, hash: encHash };
@@ -93,9 +97,13 @@ SafeExchange.signMessage = function(message, pkey, iv)
 //hash strings should match if they are unmodified
 SafeExchange.releaseMessage = function(message, hash, pkey, iv)
 {
-	var decHash	=	AES.decryptMessage(hash, pkey, iv, 128);
-	var decMsg	=	AES.decryptMessage(message, pkey, iv, 128);
-	var msgHash	=	YaMD5.hashStr(decMsg);
+	var keyState	=	Structure.hexToState(pkey);
+	var ivState		=	Structure.hexToState(iv);
+	var decMsg		=	AES.decryptMessage(message, keyState, ivState, 128);
+
+	AES.decryptMessage(hash, keyState, ivState, 128);
+	var decHash		=	Structure.stateToHex(hash[0]);
+	var msgHash		=	YaMD5.hashStr(decMsg);
 
 	if(msgHash == decHash)
 		return decMsg;
