@@ -205,6 +205,7 @@ Structure.printState = function(state)
 	}
 };
 
+//Returns the string contained in the state(s)
 Structure.statesToString = function(states)
 {
 	var numStates	=	states.length;
@@ -255,6 +256,8 @@ Structure.makeState = function(str)
 	return state;
 };
 
+//Creates and returns a randomly generated state
+//Useful for generation of keys/IV's
 Structure.generateState = function()
 {
 	var state = Structure.createState();
@@ -299,7 +302,7 @@ Structure.strToState = function(str)
 	return Structure.makeState(bytes);
 };
 
-
+//Returns a hex representation of the state
 Structure.stateToHex = function(state)
 {
 	Structure.printState(state);
