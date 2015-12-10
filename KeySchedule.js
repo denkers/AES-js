@@ -108,7 +108,7 @@ KeySchedule.prototype.getKey = function(roundNum)
 	return key;
 };
 
-
+//Returns the number of round/sub-keys in the schedule
 KeySchedule.prototype.getNumSubkeys = function()
 {
 	return this.numSubkeys;

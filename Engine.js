@@ -64,6 +64,8 @@ Engine.shiftRow = function(row, numPositions)
 
 
 //Mix columns layer
+//Performs a linear transformation of the state 
+//Multiplies the state by the mix columns matrix
 Engine.mixColumns = function(state, encrypt_mode)
 {
 	//Perform the multiplication of the state and mixColmatrix 
@@ -88,7 +90,8 @@ Engine.mixColumns = function(state, encrypt_mode)
 	Structure.copyState(state, temp);
 };
 
-
+//Performs multiplication of the stateEntry and mixEntry
+//Multiplication is in GF(2^8)
 Engine.mixMultiply = function(stateEntry, mixEntry)
 {
 	var mixHex		=	Structure.padHex(Structure.convert(mixEntry, 2, 16));
