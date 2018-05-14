@@ -1,4 +1,4 @@
-<img src="Logo.png" align="left" />
+<img src="preview/Logo.png" align="left" />
 
 # AES JS Library
 
